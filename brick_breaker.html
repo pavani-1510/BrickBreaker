@@ -216,13 +216,13 @@ function gameLoop() {
     requestAnimationFrame(gameLoop);
 }
 
-// Touch controls for mobile only
+
+// Touch controls for mobile (single set, restart on tap if game over)
 let isTouching = false;
 let lastTouchX = null;
 
 canvas.addEventListener('touchstart', function(e) {
     if (gameOver) {
-        // Restart on tap if game over
         restartGame();
         return;
     }
@@ -250,38 +250,6 @@ canvas.addEventListener('touchend', function(e) {
     e.preventDefault();
 }, { passive: false });
 
-// Touch controls for mobile
-let isTouching = false;
-let lastTouchX = null;
-
-canvas.addEventListener('touchstart', function(e) {
-    if (gameOver) return;
-    isTouching = true;
-    const touch = e.touches[0];
-    lastTouchX = touch.clientX - canvas.getBoundingClientRect().left;
-    // Optionally, move paddle center to touch point
-    paddle.x = lastTouchX - paddle.width / 2;
-    if (paddle.x < 0) paddle.x = 0;
-    if (paddle.x + paddle.width > SCREEN_WIDTH) paddle.x = SCREEN_WIDTH - paddle.width;
-    e.preventDefault();
-}, { passive: false });
-
-canvas.addEventListener('touchmove', function(e) {
-    if (!isTouching || gameOver) return;
-    const touch = e.touches[0];
-    let touchX = touch.clientX - canvas.getBoundingClientRect().left;
-    paddle.x = touchX - paddle.width / 2;
-    if (paddle.x < 0) paddle.x = 0;
-    if (paddle.x + paddle.width > SCREEN_WIDTH) paddle.x = SCREEN_WIDTH - paddle.width;
-    e.preventDefault();
-}, { passive: false });
-
-canvas.addEventListener('touchend', function(e) {
-    isTouching = false;
-    e.preventDefault();
-}, { passive: false });
-
-gameLoop();
 // Start game
 bricks = createBricks();
 gameLoop();
