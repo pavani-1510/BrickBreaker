@@ -12,7 +12,7 @@
 </head>
 <body>
     <h1>Brick Breaker Game</h1>
-    <canvas id="gameCanvas" width="800" height="600"></canvas>
+    <canvas id="gameCanvas" width="300" height="600"></canvas>
     <div id="info">
         <span id="score">Score: 0</span> | <span id="lives">Lives: 3</span>
     </div>
@@ -22,15 +22,15 @@ const ctx = canvas.getContext('2d');
 
 const SCREEN_WIDTH = 300;
 const SCREEN_HEIGHT = 600;
-const PADDLE_WIDTH = 100;
+const PADDLE_WIDTH = 70;
 const PADDLE_HEIGHT = 15;
 const PADDLE_SPEED = 8;
 const BALL_RADIUS = 10;
 const BALL_SPEED = 2;
 const BRICK_ROWS = 5;
-const BRICK_COLS = 10;
-const BRICK_WIDTH = 70;
-const BRICK_HEIGHT = 25;
+const BRICK_COLS = 5;
+const BRICK_WIDTH = 40;
+const BRICK_HEIGHT = 10;
 const BRICK_PADDING = 10;
 const BRICK_OFFSET_TOP = 50;
 const BRICK_OFFSET_LEFT = 35;
@@ -49,6 +49,8 @@ let ball = {
     dx: BALL_SPEED * (Math.random() > 0.5 ? 1 : -1),
     dy: -BALL_SPEED
 };
+
+let waitingForTouch = false;
 
 let bricks = [];
 let score = 0;
@@ -119,6 +121,7 @@ function resetBall() {
     ball.y = SCREEN_HEIGHT / 2;
     ball.dx = BALL_SPEED * (Math.random() > 0.5 ? 1 : -1);
     ball.dy = -BALL_SPEED;
+    waitingForTouch = true;
 }
 
 function restartGame() {
@@ -139,24 +142,28 @@ function update() {
         if (paddle.x < 0) paddle.x = 0;
         if (paddle.x + paddle.width > SCREEN_WIDTH) paddle.x = SCREEN_WIDTH - paddle.width;
 
-        // Move ball
-        ball.x += ball.dx;
-        ball.y += ball.dy;
+        // Move ball only if not waiting for touch
+        if (!waitingForTouch) {
+            ball.x += ball.dx;
+            ball.y += ball.dy;
+        }
 
         // Wall collision
-        if (ball.x - BALL_RADIUS < 0 || ball.x + BALL_RADIUS > SCREEN_WIDTH) ball.dx *= -1;
-        if (ball.y - BALL_RADIUS < 0) ball.dy *= -1;
-        if (ball.y + BALL_RADIUS > SCREEN_HEIGHT) {
-            lives--;
-            if (lives > 0) {
-                resetBall();
-            } else {
-                gameOver = true;
+        if (!waitingForTouch) {
+            if (ball.x - BALL_RADIUS < 0 || ball.x + BALL_RADIUS > SCREEN_WIDTH) ball.dx *= -1;
+            if (ball.y - BALL_RADIUS < 0) ball.dy *= -1;
+            if (ball.y + BALL_RADIUS > SCREEN_HEIGHT) {
+                lives--;
+                if (lives > 0) {
+                    resetBall();
+                } else {
+                    gameOver = true;
+                }
             }
         }
 
         // Paddle collision
-        if (
+        if (!waitingForTouch &&
             ball.x > paddle.x &&
             ball.x < paddle.x + paddle.width &&
             ball.y + BALL_RADIUS > paddle.y &&
@@ -168,23 +175,26 @@ function update() {
         }
 
         // Brick collision
-        for (let brick of bricks) {
-            if (brick.alive &&
-                ball.x + BALL_RADIUS > brick.x &&
-                ball.x - BALL_RADIUS < brick.x + brick.width &&
-                ball.y + BALL_RADIUS > brick.y &&
-                ball.y - BALL_RADIUS < brick.y + brick.height
-            ) {
-                brick.alive = false;
-                score += 10;
-                ball.dy *= -1;
-                break;
+        if (!waitingForTouch) {
+            for (let brick of bricks) {
+                if (brick.alive &&
+                    ball.x + BALL_RADIUS > brick.x &&
+                    ball.x - BALL_RADIUS < brick.x + brick.width &&
+                    ball.y + BALL_RADIUS > brick.y &&
+                    ball.y - BALL_RADIUS < brick.y + brick.height
+                ) {
+                    brick.alive = false;
+                    score += 10;
+                    ball.dy *= -1;
+                    break;
+                }
             }
         }
 
-        if (bricks.every(b => !b.alive)) {
-            // Add 5 new rows at the top, shift existing bricks down, and always start at level 1
-            level = 1;
+        if (!waitingForTouch && bricks.every(b => !b.alive)) {
+            // Add 5 new rows at the top, shift existing bricks down, increase level, and reset lives
+            level++;
+            lives = 3;
             let shiftY = 5 * (BRICK_HEIGHT + BRICK_PADDING);
             for (let brick of bricks) {
                 brick.y += shiftY;
@@ -202,6 +212,12 @@ function draw() {
     drawBall();
     drawBricks();
     drawInfo();
+    if (waitingForTouch && !gameOver) {
+        ctx.font = '22px Arial';
+        ctx.fillStyle = '#fff';
+        ctx.textAlign = 'center';
+        ctx.fillText('Tap to launch the ball', SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
+    }
     if (gameOver) drawGameOver();
 }
 
@@ -225,12 +241,18 @@ window.addEventListener('keyup', e => {
 let isTouching = false;
 let lastTouchX = null;
 
+
 canvas.addEventListener('touchstart', function(e) {
     if (gameOver) return;
-    isTouching = true;
     const touch = e.touches[0];
-    lastTouchX = touch.clientX - canvas.getBoundingClientRect().left;
-    // Optionally, move paddle center to touch point
+    let touchX = touch.clientX - canvas.getBoundingClientRect().left;
+    // If waiting for touch to launch ball, launch it
+    if (waitingForTouch) {
+        waitingForTouch = false;
+        return;
+    }
+    isTouching = true;
+    lastTouchX = touchX;
     paddle.x = lastTouchX - paddle.width / 2;
     if (paddle.x < 0) paddle.x = 0;
     if (paddle.x + paddle.width > SCREEN_WIDTH) paddle.x = SCREEN_WIDTH - paddle.width;
