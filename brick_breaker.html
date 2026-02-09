@@ -20,7 +20,7 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-const SCREEN_WIDTH = 800;
+const SCREEN_WIDTH = 300;
 const SCREEN_HEIGHT = 600;
 const PADDLE_WIDTH = 100;
 const PADDLE_HEIGHT = 15;
@@ -183,8 +183,8 @@ function update() {
         }
 
         if (bricks.every(b => !b.alive)) {
-            // Add 5 new rows at the top, shift existing bricks down
-            level++;
+            // Add 5 new rows at the top, shift existing bricks down, and always start at level 1
+            level = 1;
             let shiftY = 5 * (BRICK_HEIGHT + BRICK_PADDING);
             for (let brick of bricks) {
                 brick.y += shiftY;
