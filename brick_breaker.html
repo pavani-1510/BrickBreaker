@@ -11,9 +11,9 @@
     </style>
 </head>
 <body>
-    <h1>Brick Breaker Game</h1>
-    <canvas id="gameCanvas"></canvas>
-    <div id="info">
+    <h1 style="font-size:2em; margin:0.2em 0;">Brick Breaker</h1>
+    <canvas id="gameCanvas" style="touch-action:none;"></canvas>
+    <div id="info" style="font-size:1.2em; margin-top:0.5em;">
         <span id="score">Score: 0</span> | <span id="lives">Lives: 3</span>
     </div>
     <script>
@@ -21,9 +21,9 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
 
-// Responsive for mobile
-const SCREEN_WIDTH = Math.min(window.innerWidth, 400);
-const SCREEN_HEIGHT = window.innerHeight - 60;
+// Fixed size for mobile
+const SCREEN_WIDTH = 300;
+const SCREEN_HEIGHT = 600;
 const PADDLE_WIDTH = Math.max(60, SCREEN_WIDTH * 0.25);
 const PADDLE_HEIGHT = 15;
 const PADDLE_SPEED = 12;
@@ -112,11 +112,12 @@ function drawInfo() {
 
 function drawGameOver() {
     ctx.fillStyle = win ? '#ff0' : '#fff';
-    ctx.font = '48px Arial';
+    ctx.font = 'bold 2.2em Arial';
     ctx.textAlign = 'center';
     ctx.fillText(win ? 'You Win!' : 'Game Over', SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 - 20);
-    ctx.font = '28px Arial';
-    ctx.fillText('Press SPACE to restart', SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 30);
+    ctx.font = '1.2em Arial';
+    ctx.fillStyle = '#fff';
+    ctx.fillText('Tap anywhere to restart', SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2 + 30);
 }
 
 function resetBall() {
@@ -215,6 +216,7 @@ function gameLoop() {
     draw();
     requestAnimationFrame(gameLoop);
 }
+
 
 
 // Touch controls for mobile (single set, restart on tap if game over)
