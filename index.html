@@ -12,7 +12,7 @@
 </head>
 <body>
     <h1>Brick Breaker Game</h1>
-    <canvas id="gameCanvas"></canvas>
+    <canvas id="gameCanvas" width="800" height="600"></canvas>
     <div id="info">
         <span id="score">Score: 0</span> | <span id="lives">Lives: 3</span>
     </div>
@@ -20,25 +20,20 @@
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-
-// Responsive for mobile
-const SCREEN_WIDTH = Math.min(window.innerWidth, 400);
-const SCREEN_HEIGHT = window.innerHeight - 60;
-const PADDLE_WIDTH = Math.max(60, SCREEN_WIDTH * 0.25);
+const SCREEN_WIDTH = 300;
+const SCREEN_HEIGHT = 600;
+const PADDLE_WIDTH = 100;
 const PADDLE_HEIGHT = 15;
-const PADDLE_SPEED = 12;
-const BALL_RADIUS = Math.max(8, SCREEN_WIDTH * 0.04);
-const BALL_SPEED = 2.2;
+const PADDLE_SPEED = 8;
+const BALL_RADIUS = 10;
+const BALL_SPEED = 2;
 const BRICK_ROWS = 5;
-const BRICK_COLS = 7;
-const BRICK_WIDTH = (SCREEN_WIDTH - 40) / BRICK_COLS - 6;
-const BRICK_HEIGHT = 18;
-const BRICK_PADDING = 6;
-const BRICK_OFFSET_TOP = 40;
-const BRICK_OFFSET_LEFT = 20;
-
-canvas.width = SCREEN_WIDTH;
-canvas.height = SCREEN_HEIGHT;
+const BRICK_COLS = 10;
+const BRICK_WIDTH = 70;
+const BRICK_HEIGHT = 25;
+const BRICK_PADDING = 10;
+const BRICK_OFFSET_TOP = 50;
+const BRICK_OFFSET_LEFT = 35;
 
 let paddle = {
     x: (SCREEN_WIDTH - PADDLE_WIDTH) / 2,
@@ -216,39 +211,15 @@ function gameLoop() {
     requestAnimationFrame(gameLoop);
 }
 
-// Touch controls for mobile only
-let isTouching = false;
-let lastTouchX = null;
-
-canvas.addEventListener('touchstart', function(e) {
-    if (gameOver) {
-        // Restart on tap if game over
-        restartGame();
-        return;
-    }
-    isTouching = true;
-    const touch = e.touches[0];
-    lastTouchX = touch.clientX - canvas.getBoundingClientRect().left;
-    paddle.x = lastTouchX - paddle.width / 2;
-    if (paddle.x < 0) paddle.x = 0;
-    if (paddle.x + paddle.width > SCREEN_WIDTH) paddle.x = SCREEN_WIDTH - paddle.width;
-    e.preventDefault();
-}, { passive: false });
-
-canvas.addEventListener('touchmove', function(e) {
-    if (!isTouching || gameOver) return;
-    const touch = e.touches[0];
-    let touchX = touch.clientX - canvas.getBoundingClientRect().left;
-    paddle.x = touchX - paddle.width / 2;
-    if (paddle.x < 0) paddle.x = 0;
-    if (paddle.x + paddle.width > SCREEN_WIDTH) paddle.x = SCREEN_WIDTH - paddle.width;
-    e.preventDefault();
-}, { passive: false });
-
-canvas.addEventListener('touchend', function(e) {
-    isTouching = false;
-    e.preventDefault();
-}, { passive: false });
+// Controls
+window.addEventListener('keydown', e => {
+    if (e.key === 'ArrowLeft') paddle.dx = -PADDLE_SPEED;
+    if (e.key === 'ArrowRight') paddle.dx = PADDLE_SPEED;
+    if (e.key === ' ' && gameOver) restartGame();
+});
+window.addEventListener('keyup', e => {
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') paddle.dx = 0;
+});
 
 // Touch controls for mobile
 let isTouching = false;
